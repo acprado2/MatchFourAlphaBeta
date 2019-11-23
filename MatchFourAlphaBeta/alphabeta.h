@@ -1,11 +1,31 @@
 #ifndef ALPHABETA
 #define ALPHABETA
 
+#include <limits>
+#include <algorithm>
+#include <map>
+#include <vector>
+#include <stdlib.h>
+#include "state.h"
+
 class AlphaBeta
 {
 public:
 	AlphaBeta();
 	~AlphaBeta();
+
+	State search( State state, int depth );
+
+private:
+
+	int maxValue( State state, int alpha, int beta, int target_depth, int cur_depth );
+	int minValue( State state, int alpha, int beta, int target_depth, int cur_depth );
+
+	bool terminalTest( State state );
+	int utility( State state );
+	State successor( State state, int idx, bool isMin );
+
+	std::map<int, std::vector<State>> successors; // Map of successor states with potential actions to take (K = util, V = state)
 }; // AlphaBeta
 
 #endif // ALPHABETA

@@ -66,9 +66,11 @@
   <ItemGroup>
     <ClCompile Include="alphabeta.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="state.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alphabeta.h" />
+    <ClInclude Include="state.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

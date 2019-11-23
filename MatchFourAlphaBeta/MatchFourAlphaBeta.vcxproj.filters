@@ -13,9 +13,15 @@
     <ClCompile Include="alphabeta.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alphabeta.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="state.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
