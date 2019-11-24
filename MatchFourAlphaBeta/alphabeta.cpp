@@ -108,8 +108,35 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 }
 
 // Check if this is a leaf node
-bool AlphaBeta::terminalTest( State state )
+// To make this check as fast as possible, we will check for
+// four in a row vertically or horizontally using bit shifts
+bool AlphaBeta::terminalTest( State& state )
 {
+	// Board is 8x8 so split our long into an array of 8-bit characters for 
+	// easier manipulation
+	unsigned char *p1 = reinterpret_cast<unsigned char *>( &state.board_p1 );
+	unsigned char *p2 = reinterpret_cast<unsigned char *>( &state.board_p2 );
+
+	int rowShift = 0; // amount of bits to shift to reach current row
+	for ( int i = 0; i < 5; ++i )
+	{
+		for ( int j = 0; j < 8; ++j )
+		{
+			unsigned long long vertMatch = 0x1010101LL << ( rowShift + j ); // Vertical four-in-a-row to check
+
+			if ( p1[j] & ( 0xF << i ) || ( state.board_p1 & vertMatch ) == vertMatch )
+			{
+				state.terminal_p1 = true;
+				return true;
+			}
+			else if ( p2[j] & ( 0xF << i ) || ( state.board_p2 & vertMatch ) == vertMatch )
+			{
+				state.terminal_p2 = true;
+				return true;
+			}
+		}
+		rowShift += 8;
+	}
 	return false;
 }
 
@@ -126,12 +153,23 @@ State AlphaBeta::successor( State state, int idx, bool isMin )
 	if ( isMin )
 	{
 		s.board_p2 ^= ( 1LL << idx );
-		// TODO: Need to figure out move string here
 	}
 	else
 	{
 		s.board_p1 ^= ( 1LL << idx );
-		// TODO: Need to figure out move string here
 	}
+
+	// Determine move string
+	char row = 'A';
+	int col = idx % 8;
+	for ( int i = 0; i < 7; ++i )
+	{
+		idx -= 8;
+		if ( idx > 0 )
+		{
+			++row;
+		}
+	}
+	s.move = row + std::to_string( col );
 	return s;
 }

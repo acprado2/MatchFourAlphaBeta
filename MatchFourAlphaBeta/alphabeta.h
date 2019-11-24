@@ -21,7 +21,7 @@ private:
 	int maxValue( State state, int alpha, int beta, int target_depth, int cur_depth );
 	int minValue( State state, int alpha, int beta, int target_depth, int cur_depth );
 
-	bool terminalTest( State state );
+	bool terminalTest( State& state );
 	int utility( State state );
 	State successor( State state, int idx, bool isMin );
 
