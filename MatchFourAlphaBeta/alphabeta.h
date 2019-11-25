@@ -1,11 +1,8 @@
 #ifndef ALPHABETA
 #define ALPHABETA
 
-#include <limits>
-#include <algorithm>
 #include <map>
 #include <vector>
-#include <stdlib.h>
 #include "state.h"
 
 class AlphaBeta
@@ -25,7 +22,7 @@ private:
 	int utility( State state );
 	State successor( State state, int idx, bool isMin );
 
-	std::map<int, std::vector<State>> successors; // Map of successor states with potential actions to take (K = util, V = state)
+	std::map<int, std::vector<State>> m_successors; // Map of successor states with potential actions to take (K = util, V = state)
 }; // AlphaBeta
 
 #endif // ALPHABETA

@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <limits>
+#include <stdlib.h>
+#include <iostream>
 #include "alphabeta.h"
 
 
@@ -12,16 +16,17 @@ AlphaBeta::~AlphaBeta()
 
 State AlphaBeta::search( State state, int depth )
 {
-	successors.clear();
+	m_successors.clear();
 	int v = maxValue( state, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), depth, 0 );
 		
 	// Pick a random action from the highest utility moves
-	std::vector<State> actions = successors.rbegin()->second;
+	std::vector<State> actions = m_successors.rbegin()->second;
 	return actions.at( rand() % actions.size() );
 }
 
 int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int cur_depth )
 {
+	std::cout << "MAX PLY: " << cur_depth << "\n";
 	if ( terminalTest( state ) || cur_depth == target_depth )
 	{
 		// TODO: Add to transposition table here
@@ -37,8 +42,9 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		{
 			continue;
 		}
-		State s = successor( state, i, true );
-		// TODO: Check transposition table here
+		State s = successor( state, i, false );
+		
+		v = std::min( v, minValue( s, alpha, beta, target_depth, cur_depth + 1 ) );
 
 		if ( v >= beta )
 		{
@@ -49,14 +55,14 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		// Insert successor states into map so we can determine what move to make
 		if ( cur_depth == 0 )
 		{
-			if ( successors.find( v ) != successors.end() )
+			if ( m_successors.find( v ) != m_successors.end() )
 			{
-				successors.at( v ).push_back( s );
+				m_successors.at( v ).push_back( s );
 			}
 			else
 			{
 				std::vector<State> vec {s};
-				successors.insert( { v, vec } );
+				m_successors.insert( { v, vec } );
 			}
 		}
 	}
@@ -65,6 +71,7 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 
 int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int cur_depth )
 {
+	std::cout << "MIN PLY: " << cur_depth << "\n";
 	if ( terminalTest( state ) || cur_depth == target_depth )
 	{
 		// TODO: Add to transposition table here (also check if in it)
@@ -93,14 +100,14 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 		// Insert successor states into map so we can determine what move to make
 		if ( cur_depth == 0 )
 		{
-			if ( successors.find( v ) != successors.end() )
+			if ( m_successors.find( v ) != m_successors.end() )
 			{
-				successors.at( v ).push_back( s );
+				m_successors.at( v ).push_back( s );
 			}
 			else
 			{
 				std::vector<State> vec {s};
-				successors.insert( { v, vec } );
+				m_successors.insert( { v, vec } );
 			}
 		}
 	}
@@ -123,13 +130,14 @@ bool AlphaBeta::terminalTest( State& state )
 		for ( int j = 0; j < 8; ++j )
 		{
 			unsigned long long vertMatch = 0x1010101LL << ( rowShift + j ); // Vertical four-in-a-row to check
+			unsigned char horiMatch = 0xF << i; // Horizontal four-in-a-row to check
 
-			if ( p1[j] & ( 0xF << i ) || ( state.board_p1 & vertMatch ) == vertMatch )
+			if ( ( p1[j] & horiMatch ) == horiMatch || ( state.board_p1 & vertMatch ) == vertMatch )
 			{
 				state.terminal_p1 = true;
 				return true;
 			}
-			else if ( p2[j] & ( 0xF << i ) || ( state.board_p2 & vertMatch ) == vertMatch )
+			else if ( ( p2[j] & horiMatch ) == horiMatch || ( state.board_p2 & vertMatch ) == vertMatch )
 			{
 				state.terminal_p2 = true;
 				return true;
@@ -143,6 +151,12 @@ bool AlphaBeta::terminalTest( State& state )
 // Heuristic
 int AlphaBeta::utility( State state )
 {
+	// Check if this is a terminal state first (best/worst case)
+	if ( state.terminal_p1 )
+		return std::numeric_limits<int>::max();
+	else if ( state.terminal_p2 )
+		return std::numeric_limits<int>::min();
+
 	return 0;
 }
 

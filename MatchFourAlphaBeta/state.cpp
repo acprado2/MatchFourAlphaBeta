@@ -1,7 +1,7 @@
 #include "state.h"
 
 
-State::State( unsigned long long board_p1, unsigned long long board_p2, std::string move )
+State::State( unsigned long long board_p1, unsigned long long board_p2 )
 {
 	this->board_p1 = board_p1;
 	this->board_p2 = board_p2;
