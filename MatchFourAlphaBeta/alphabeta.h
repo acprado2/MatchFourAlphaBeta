@@ -2,8 +2,20 @@
 #define ALPHABETA
 
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include "state.h"
+
+// Hash function for our lookup table
+struct BoardHash
+{
+	std::size_t operator()( const std::pair<unsigned long long, unsigned long long>& p ) const
+	{
+		size_t res = p.first * 0x243F6A8885A308D3LL; // multiply by pi
+		res ^= p.second;
+		return res;
+	}
+};
 
 class AlphaBeta
 {
@@ -23,6 +35,7 @@ private:
 	State successor( State state, int idx, bool isMin );
 
 	std::map<int, std::vector<State>> m_successors; // Map of successor states with potential actions to take (K = util, V = state)
+	std::unordered_map<std::pair<unsigned long long, unsigned long long>, int, BoardHash> m_lookup;
 }; // AlphaBeta
 
 #endif // ALPHABETA

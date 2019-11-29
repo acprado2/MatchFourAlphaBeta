@@ -29,8 +29,15 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 	std::cout << "MAX PLY: " << cur_depth << "\n";
 	if ( terminalTest( state ) || cur_depth == target_depth )
 	{
-		// TODO: Add to transposition table here
-		return utility( state );
+		std::pair<unsigned long long, unsigned long long> p = {state.board_p1, state.board_p2 };
+		auto it = m_lookup.find( p );
+		if ( it == m_lookup.end() )
+		{
+			int res = utility( state );
+			m_lookup[p] = res;
+			return res;
+		}
+		return it->second;
 	}
 	int v = std::numeric_limits<int>::min();
 
