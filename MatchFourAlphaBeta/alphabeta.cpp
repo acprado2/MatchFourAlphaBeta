@@ -14,7 +14,18 @@ AlphaBeta::~AlphaBeta()
 {
 }
 
-State AlphaBeta::search( State state, int depth )
+State AlphaBeta::search( State state, size_t time )
+{
+	// TODO: write some function to deal with when to stop searching based on time left
+	State res( state );
+	for ( int i = 1; i < 5; ++i )
+	{
+		res = performSearch( state, i );
+	}
+	return res;
+}
+
+State AlphaBeta::performSearch( State state, int depth )
 {
 	m_successors.clear();
 	int v = maxValue( state, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), depth, 0 );

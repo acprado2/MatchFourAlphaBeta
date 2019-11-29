@@ -23,9 +23,13 @@ public:
 	AlphaBeta();
 	~AlphaBeta();
 
-	State search( State state, int depth );
+	// Iterative deepening search
+	State search( State state, size_t time );
 
 private:
+
+	// Searches to fixed depth
+	State performSearch( State state, int depth );
 
 	int maxValue( State state, int alpha, int beta, int target_depth, int cur_depth );
 	int minValue( State state, int alpha, int beta, int target_depth, int cur_depth );

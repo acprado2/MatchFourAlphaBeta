@@ -11,6 +11,15 @@ State::State( unsigned long long board_p1, unsigned long long board_p2 )
 	this->terminal_p2 = false;
 }
 
+State::State( const State &s )
+{
+	this->board_p1 = s.board_p1;
+	this->board_p2 = s.board_p2;
+	this->move = s.move;
+	this->utility = s.utility;
+	this->terminal_p1 = s.terminal_p1;
+	this->terminal_p2 = s.terminal_p2;
+}
 
 State::~State()
 {

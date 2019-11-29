@@ -7,6 +7,7 @@ class State
 {
 public:
 	State( unsigned long long board_p1, unsigned long long board_p2 );
+	State( const State &s );
 	~State();
 
 	// Use int_64 for board states so we can do bitwise math for evaluation (fast!)

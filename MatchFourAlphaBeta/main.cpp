@@ -1,7 +1,7 @@
 #include <iostream>
 #include "alphabeta.h"
 
-State printBoard( bool bAgentFirst, State state, std::vector<std::string> &firstPlayerMoves, std::vector<std::string> &secondPlayerMoves );
+State printBoard( bool bAgentFirst, State state, std::vector<std::string> &firstPlayerMoves, std::vector<std::string> &secondPlayerMoves, size_t turnTime );
 State opponentMove( State state );
 void printPlayerMoves( int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves );
 
@@ -27,18 +27,19 @@ int main( )
 
 	while ( state.terminal_p1 != true && state.terminal_p2 != true )
 	{
-		state = ( turnOrder == 'A' || turnOrder == 'a' ) ? printBoard( true, state, firstPlayerMoves, secondPlayerMoves ) : 
-														   printBoard( false, opponentMove( state ), firstPlayerMoves, secondPlayerMoves ); // replace if state with alphabeta
+		state = ( turnOrder == 'A' || turnOrder == 'a' ) ? printBoard( true, ab.search( state, turnTime ), firstPlayerMoves, secondPlayerMoves, turnTime ) : 
+														   printBoard( false, opponentMove( state ), firstPlayerMoves, secondPlayerMoves, turnTime );
 	}
 }
 
 // Print current board state
-State printBoard( bool bAgentFirst, State state, std::vector<std::string> &firstPlayerMoves, std::vector<std::string> &secondPlayerMoves )
+State printBoard( bool bAgentFirst, State state, std::vector<std::string> &firstPlayerMoves, std::vector<std::string> &secondPlayerMoves, size_t turnTime )
 {
+	AlphaBeta ab;
 	firstPlayerMoves.push_back( state.move );
 	if ( !bAgentFirst )
 	{
-		state = state; // replace else state with alphabeta
+		state = ab.search( state, turnTime ); // replace else state with alphabeta
 		secondPlayerMoves.push_back( state.move );
 		std::swap( state.board_p1, state.board_p2 ); // swap boards (alphabeta always assumes agent is first)
 		std::swap( state.terminal_p1, state.terminal_p2 );
