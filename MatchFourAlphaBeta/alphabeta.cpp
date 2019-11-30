@@ -231,6 +231,7 @@ int AlphaBeta::utility( State state )
 				{
 				case 2:
 					p2PairCnt += 4;
+					break;
 				case 3:
 					++p2DangerCnt;
 				}
@@ -241,8 +242,10 @@ int AlphaBeta::utility( State state )
 				{
 				case 1:
 					p2SingleCnt += 3 - p1CntHor;
+					break;
 				case 2:
-					p2PairCnt += ( p1CntHor == 1 ) ? 3 : 0; 
+					p2PairCnt += ( p1CntHor == 1 ) ? 3 : 0;
+					break;
 				}
 			}
 
@@ -252,8 +255,10 @@ int AlphaBeta::utility( State state )
 				{
 				case 2:
 					p1PairCnt += 4;
+					break;
 				case 3:
 					++p1DangerCnt;
+					break;
 				}
 			}
 			else if ( p2CntHor >= 1 )
@@ -262,8 +267,10 @@ int AlphaBeta::utility( State state )
 				{
 				case 1:
 					p1SingleCnt += 3 - p2CntHor;
+					break;
 				case 2:
-					p1PairCnt += ( p2CntHor == 1 ) ? 3 : 0; 
+					p1PairCnt += ( p2CntHor == 1 ) ? 3 : 0;
+					break;
 				}
 			}
 
@@ -274,12 +281,14 @@ int AlphaBeta::utility( State state )
 				{
 				case 2:
 					p2PairCnt += 4;
+					break;
 				case 3:
 					if ( ++p2DangerCnt >= 2 ) 
 					{
 						// This is a killer move in our opponent's favor
 						return std::numeric_limits<int>::min() - 1; 
 					}
+					break;
 				}
 			}
 			else if ( p1CntVert >= 1 )
@@ -288,8 +297,10 @@ int AlphaBeta::utility( State state )
 				{
 				case 1:
 					p2SingleCnt += 3 - p1CntVert;
+					break;
 				case 2:
-					p2PairCnt += ( p1CntVert == 1 ) ? 3 : 0; 
+					p2PairCnt += ( p1CntVert == 1 ) ? 3 : 0;
+					break;
 				}
 			}
 
@@ -299,11 +310,13 @@ int AlphaBeta::utility( State state )
 				{
 				case 2:
 					p1PairCnt += 4;
+					break;
 				case 3:
 					if ( ++p1DangerCnt >= 2 ) 
 					{
 						// This is a killer move in our favor
-						return std::numeric_limits<int>::max() - 1; 
+						return std::numeric_limits<int>::max() - 1;
+						break;
 					}
 				}
 			}
@@ -313,8 +326,10 @@ int AlphaBeta::utility( State state )
 				{
 				case 1:
 					p1SingleCnt += 3 - p2CntVert;
+					break;
 				case 2:
-					p1PairCnt += ( p2CntVert == 1 ) ? 3 : 0; 
+					p1PairCnt += ( p2CntVert == 1 ) ? 3 : 0;
+					break;
 				}
 			}
 		}
