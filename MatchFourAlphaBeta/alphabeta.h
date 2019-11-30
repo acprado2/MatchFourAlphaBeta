@@ -39,7 +39,11 @@ private:
 	State successor( State state, int idx, bool isMin );
 
 	std::map<int, std::vector<State>> m_successors; // Map of successor states with potential actions to take (K = util, V = state)
-	std::unordered_map<std::pair<unsigned long long, unsigned long long>, int, BoardHash> m_lookup;
+	std::unordered_map<std::pair<unsigned long long, unsigned long long>, int, BoardHash> m_transposition;
+
+	// Lookup tables
+	static const unsigned int m_horizontal[];
+	static const std::unordered_map<unsigned int, unsigned int> m_vertical;
 }; // AlphaBeta
 
 #endif // ALPHABETA

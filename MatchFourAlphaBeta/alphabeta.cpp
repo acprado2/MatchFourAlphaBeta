@@ -4,6 +4,18 @@
 #include <iostream>
 #include "alphabeta.h"
 
+// Lookup tables count the number of set bits so we can determine danger states in constant time
+const unsigned int AlphaBeta::m_horizontal[16] = { 
+	0, 1, 1, 2, 
+	1, 2, 2, 3, 
+	1, 2, 2, 3, 
+	2, 3, 3, 4 };
+
+const std::unordered_map<unsigned int, unsigned int> AlphaBeta::m_vertical = { 
+	{ 0x0000000, 0 }, { 0x0000001, 1 }, { 0x0000100, 1 }, { 0x0000101, 2 }, 
+	{ 0x0010000, 1 }, { 0x0010001, 2 }, { 0x0010100, 2 }, { 0x0010101, 3 },
+	{ 0x1000000, 1 }, { 0x1000001, 2 }, { 0x1000100, 2 }, { 0x1000101, 3 },
+	{ 0x1010000, 2 }, { 0x1010001, 3 }, { 0x1010100, 3 }, { 0x1010101, 4 } };
 
 AlphaBeta::AlphaBeta()
 {
@@ -18,7 +30,7 @@ State AlphaBeta::search( State state, size_t time )
 {
 	// TODO: write some function to deal with when to stop searching based on time left
 	State res( state );
-	for ( int i = 1; i < 5; ++i )
+	for ( int i = 2; i < 4; ++i )
 	{
 		res = performSearch( state, i );
 	}
@@ -40,12 +52,12 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 	std::cout << "MAX PLY: " << cur_depth << "\n";
 	if ( terminalTest( state ) || cur_depth == target_depth )
 	{
-		std::pair<unsigned long long, unsigned long long> p = {state.board_p1, state.board_p2 };
-		auto it = m_lookup.find( p );
-		if ( it == m_lookup.end() )
+		std::pair<unsigned long long, unsigned long long> p = { state.board_p1, state.board_p2 };
+		auto it = m_transposition.find( p );
+		if ( it == m_transposition.end() )
 		{
 			int res = utility( state );
-			m_lookup[p] = res;
+			m_transposition[p] = res;
 			return res;
 		}
 		return it->second;
@@ -92,8 +104,15 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 	std::cout << "MIN PLY: " << cur_depth << "\n";
 	if ( terminalTest( state ) || cur_depth == target_depth )
 	{
-		// TODO: Add to transposition table here (also check if in it)
-		return utility( state );
+		std::pair<unsigned long long, unsigned long long> p = { state.board_p1, state.board_p2 };
+		auto it = m_transposition.find( p );
+		if ( it == m_transposition.end() )
+		{
+			int res = utility( state );
+			m_transposition[p] = res;
+			return res;
+		}
+		return it->second;
 	}
 	int v = std::numeric_limits<int>::max();
 
@@ -163,6 +182,14 @@ bool AlphaBeta::terminalTest( State& state )
 		}
 		rowShift += 8;
 	}
+
+	// Check if the entire board has filled (stalemate)
+	if ( ( state.board_p1 ^ state.board_p2 ) == std::numeric_limits<unsigned long long>::max() )
+	{
+		state.stalemate = true;
+		return true;
+	}
+
 	return false;
 }
 
@@ -174,8 +201,126 @@ int AlphaBeta::utility( State state )
 		return std::numeric_limits<int>::max();
 	else if ( state.terminal_p2 )
 		return std::numeric_limits<int>::min();
+	else if ( state.stalemate )
+		return std::numeric_limits<int>::min() - 2; // Stalemates aren't as bad as losing, but are close
 
-	return 0;
+	// Check for danger states
+	// Danger states occur when in a four-tile span there are three tiles 
+	// of a single type with a blank in the last space. This becomes a killer
+	// move if there are more than of these in a single state
+	unsigned char *p1 = reinterpret_cast<unsigned char *>( &state.board_p1 );
+	unsigned char *p2 = reinterpret_cast<unsigned char *>( &state.board_p2 );
+
+	int rowShift = 0; // amount of bits to shift to reach current row
+	int p1DangerCnt = 0, p2DangerCnt = 0; // number of danger tiles in the state
+	int p1PairCnt = 0, p2PairCnt = 0, p1SingleCnt = 0, p2SingleCnt = 0; // Pairs and single tiles in the sate
+	for ( int i = 0; i < 5; ++i )
+	{
+		for ( int j = 0; j < 8; ++j )
+		{
+			// Check for danger tiles by counting horizontal/vertical bits
+			unsigned int p1CntHor = m_horizontal[( p1[j] >> i) & 0xF];
+			unsigned int p2CntHor = m_horizontal[( p2[j] >> i) & 0xF];
+			unsigned int p1CntVert = m_vertical.at( ( state.board_p1 >> ( rowShift + j ) ) & 0x1010101 );
+			unsigned int p2CntVert = m_vertical.at( ( state.board_p2 >> ( rowShift + j ) ) & 0x1010101 );
+
+			// Horizontal
+			if ( p1CntHor == 0 )
+			{
+				switch ( p2CntHor )
+				{
+				case 2:
+					p2PairCnt += 4;
+				case 3:
+					++p2DangerCnt;
+				}
+			}
+			else if ( p1CntHor >= 1 )
+			{
+				switch ( p2CntHor )
+				{
+				case 1:
+					p2SingleCnt += 3 - p1CntHor;
+				case 2:
+					p2PairCnt += ( p1CntHor == 1 ) ? 3 : 0; 
+				}
+			}
+
+			if ( p2CntHor == 0 )
+			{
+				switch ( p1CntHor )
+				{
+				case 2:
+					p1PairCnt += 4;
+				case 3:
+					++p1DangerCnt;
+				}
+			}
+			else if ( p2CntHor >= 1 )
+			{
+				switch ( p1CntHor )
+				{
+				case 1:
+					p1SingleCnt += 3 - p2CntHor;
+				case 2:
+					p1PairCnt += ( p2CntHor == 1 ) ? 3 : 0; 
+				}
+			}
+
+			// Vertical
+			if ( p1CntVert == 0 )
+			{
+				switch ( p2CntVert )
+				{
+				case 2:
+					p2PairCnt += 4;
+				case 3:
+					if ( ++p2DangerCnt >= 2 ) 
+					{
+						// This is a killer move in our opponent's favor
+						return std::numeric_limits<int>::min() - 1; 
+					}
+				}
+			}
+			else if ( p1CntVert >= 1 )
+			{
+				switch ( p2CntVert )
+				{
+				case 1:
+					p2SingleCnt += 3 - p1CntVert;
+				case 2:
+					p2PairCnt += ( p1CntVert == 1 ) ? 3 : 0; 
+				}
+			}
+
+			if ( p2CntVert == 0 )
+			{
+				switch ( p1CntVert )
+				{
+				case 2:
+					p1PairCnt += 4;
+				case 3:
+					if ( ++p1DangerCnt >= 2 ) 
+					{
+						// This is a killer move in our favor
+						return std::numeric_limits<int>::max() - 1; 
+					}
+				}
+			}
+			else if ( p2CntVert >= 1 )
+			{
+				switch ( p1CntVert )
+				{
+				case 1:
+					p1SingleCnt += 3 - p2CntVert;
+				case 2:
+					p1PairCnt += ( p2CntVert == 1 ) ? 3 : 0; 
+				}
+			}
+		}
+		rowShift += 8;
+	}
+	return ( ( p1DangerCnt - p2DangerCnt ) * 10 ) + ( p1PairCnt - p2PairCnt ) + ( p1SingleCnt - p2SingleCnt ); // Danger tiles should have priority in dealing with
 }
 
 // Generate a successor node for a given board index
@@ -192,8 +337,8 @@ State AlphaBeta::successor( State state, int idx, bool isMin )
 	}
 
 	// Determine move string
-	char row = 'A';
-	int col = idx % 8;
+	char row = 'a';
+	int col = idx % 8 + 1;
 	for ( int i = 0; i < 7; ++i )
 	{
 		idx -= 8;

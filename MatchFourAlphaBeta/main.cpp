@@ -1,13 +1,15 @@
 #include <iostream>
+#include <time.h>
 #include "alphabeta.h"
 
 State printBoard( bool bAgentFirst, State state, std::vector<std::string> &firstPlayerMoves, std::vector<std::string> &secondPlayerMoves, size_t turnTime );
 State opponentMove( State state );
-void printPlayerMoves( int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves );
+void printPlayerMoves( unsigned int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves );
 
 int main( )
 {
 	// NOTE: For UI, if we are player 2, swap returned p1/p2 states and values
+	srand( static_cast<unsigned int>( time(NULL) ) );
 	AlphaBeta ab;
 	State state( 0LL, 0LL );
 	size_t turnTime;
@@ -49,10 +51,10 @@ State printBoard( bool bAgentFirst, State state, std::vector<std::string> &first
 	std::cout << std::string( 4, ' ' ) << "1 2 3 4 5 6 7 8 " << std::string( 5, ' ' ) << ( bAgentFirst ? "Agent vs. Opponent\n" : "Opponent vs. Agent\n" );
 
 	// Print the first 8 moves with the board
-	for ( int i = 0; i < 8; ++i )
+	for ( unsigned int i = 0; i < 8; ++i )
 	{
 		std::cout << std::string( 2, ' ' ) << row;
-		for ( int j = 0; j < 8; ++j )
+		for ( unsigned int j = 0; j < 8; ++j )
 		{
 			int pos = ( i * 8 ) + j;
 			if ( state.board_p1 & ( 1LL  << pos ) )
@@ -120,7 +122,7 @@ State opponentMove( State state )
 	return state;
 }
 
-void printPlayerMoves( int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves )
+void printPlayerMoves( unsigned int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves )
 {
 	if ( firstPlayerMoves.size() == idx + 1 )
 	{
@@ -130,16 +132,21 @@ void printPlayerMoves( int idx, State state, std::vector<std::string> firstPlaye
 			std::cout << " wins\n";
 			return;
 		}
-		std::cout << std::string( 2, ' ' ) << secondPlayerMoves[idx];
-		if ( state.terminal_p2 )
+		else if ( state.terminal_p2 )
 		{
+			std::cout << std::string( 2, ' ' ) << secondPlayerMoves[idx];
 			std::cout << " wins\n";
 			return;
 		}
 	}
 	else if ( firstPlayerMoves.size() > idx )
 	{
-		std::cout << firstPlayerMoves[idx] << std::string( 2, ' ' ) << secondPlayerMoves[idx];
+		std::cout << firstPlayerMoves[idx];
+	}
+
+	if ( secondPlayerMoves.size() > idx )
+	{
+		std::cout << std::string( 2, ' ' ) << secondPlayerMoves[idx];
 	}
 }
 

@@ -18,6 +18,7 @@ public:
 	std::string move; // Move taken for this state
 	bool terminal_p1;
 	bool terminal_p2;
+	bool stalemate;
 }; // State
 
 #endif // STATE

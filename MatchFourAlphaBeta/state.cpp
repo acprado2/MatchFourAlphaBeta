@@ -9,6 +9,7 @@ State::State( unsigned long long board_p1, unsigned long long board_p2 )
 	this->utility = 0;
 	this->terminal_p1 = false;
 	this->terminal_p2 = false;
+	this->stalemate = false;
 }
 
 State::State( const State &s )
@@ -19,6 +20,7 @@ State::State( const State &s )
 	this->utility = s.utility;
 	this->terminal_p1 = s.terminal_p1;
 	this->terminal_p2 = s.terminal_p2;
+	this->stalemate = s.stalemate;
 }
 
 State::~State()
