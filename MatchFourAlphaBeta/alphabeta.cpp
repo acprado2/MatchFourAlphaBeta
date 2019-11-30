@@ -30,7 +30,7 @@ State AlphaBeta::search( State state, size_t time )
 {
 	// TODO: write some function to deal with when to stop searching based on time left
 	State res( state );
-	for ( int i = 2; i < 4; ++i )
+	for ( int i = 3; i < 4; ++i )
 	{
 		res = performSearch( state, i );
 	}
@@ -49,18 +49,17 @@ State AlphaBeta::performSearch( State state, int depth )
 
 int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int cur_depth )
 {
-	std::cout << "MAX PLY: " << cur_depth << "\n";
 	if ( terminalTest( state ) || cur_depth == target_depth )
 	{
-		std::pair<unsigned long long, unsigned long long> p = { state.board_p1, state.board_p2 };
-		auto it = m_transposition.find( p );
-		if ( it == m_transposition.end() )
+		//std::pair<unsigned long long, unsigned long long> p = { state.board_p1, state.board_p2 };
+		//auto it = m_transposition.find( p );
+		//if ( it == m_transposition.end() )
 		{
 			int res = utility( state );
-			m_transposition[p] = res;
+			//m_transposition[p] = res;
 			return res;
 		}
-		return it->second;
+		//return it->second;
 	}
 	int v = std::numeric_limits<int>::min();
 
@@ -74,7 +73,7 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		}
 		State s = successor( state, i, false );
 		
-		v = std::min( v, minValue( s, alpha, beta, target_depth, cur_depth + 1 ) );
+		v = std::max( v, minValue( s, alpha, beta, target_depth, cur_depth + 1 ) );
 
 		if ( v >= beta )
 		{
@@ -85,6 +84,7 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		// Insert successor states into map so we can determine what move to make
 		if ( cur_depth == 0 )
 		{
+			s.utility = v;
 			if ( m_successors.find( v ) != m_successors.end() )
 			{
 				m_successors.at( v ).push_back( s );
@@ -101,18 +101,17 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 
 int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int cur_depth )
 {
-	std::cout << "MIN PLY: " << cur_depth << "\n";
 	if ( terminalTest( state ) || cur_depth == target_depth )
 	{
-		std::pair<unsigned long long, unsigned long long> p = { state.board_p1, state.board_p2 };
-		auto it = m_transposition.find( p );
-		if ( it == m_transposition.end() )
+		//std::pair<unsigned long long, unsigned long long> p = { state.board_p1, state.board_p2 };
+		//auto it = m_transposition.find( p );
+		//if ( it == m_transposition.end() )
 		{
 			int res = utility( state );
-			m_transposition[p] = res;
+			//m_transposition[p] = res;
 			return res;
 		}
-		return it->second;
+		//return it->second;
 	}
 	int v = std::numeric_limits<int>::max();
 
@@ -126,7 +125,7 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 		}
 		State s = successor( state, i, true );
 
-		v = std::max( v, maxValue( s, alpha, beta, target_depth, cur_depth + 1 ) );
+		v = std::min( v, maxValue( s, alpha, beta, target_depth, cur_depth + 1 ) );
 
 		if ( v <= alpha )
 		{
@@ -137,6 +136,7 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 		// Insert successor states into map so we can determine what move to make
 		if ( cur_depth == 0 )
 		{
+			s.utility = v;
 			if ( m_successors.find( v ) != m_successors.end() )
 			{
 				m_successors.at( v ).push_back( s );
@@ -229,8 +229,11 @@ int AlphaBeta::utility( State state )
 			{
 				switch ( p2CntHor )
 				{
+				case 1:
+					p2SingleCnt += 3;
+					break;
 				case 2:
-					p2PairCnt += 4;
+					p2PairCnt += 8;
 					break;
 				case 3:
 					++p2DangerCnt;
@@ -244,7 +247,7 @@ int AlphaBeta::utility( State state )
 					p2SingleCnt += 3 - p1CntHor;
 					break;
 				case 2:
-					p2PairCnt += ( p1CntHor == 1 ) ? 3 : 0;
+					p2PairCnt += ( p1CntHor == 1 ) ? 5 : 0;
 					break;
 				}
 			}
@@ -253,8 +256,11 @@ int AlphaBeta::utility( State state )
 			{
 				switch ( p1CntHor )
 				{
+				case 1:
+					p1SingleCnt += 3;
+					break;
 				case 2:
-					p1PairCnt += 4;
+					p1PairCnt += 8;
 					break;
 				case 3:
 					++p1DangerCnt;
@@ -269,7 +275,7 @@ int AlphaBeta::utility( State state )
 					p1SingleCnt += 3 - p2CntHor;
 					break;
 				case 2:
-					p1PairCnt += ( p2CntHor == 1 ) ? 3 : 0;
+					p1PairCnt += ( p2CntHor == 1 ) ? 5 : 0;
 					break;
 				}
 			}
@@ -279,8 +285,11 @@ int AlphaBeta::utility( State state )
 			{
 				switch ( p2CntVert )
 				{
+				case 1:
+					p2SingleCnt += 3;
+					break;
 				case 2:
-					p2PairCnt += 4;
+					p2PairCnt += 8;
 					break;
 				case 3:
 					if ( ++p2DangerCnt >= 2 ) 
@@ -299,7 +308,7 @@ int AlphaBeta::utility( State state )
 					p2SingleCnt += 3 - p1CntVert;
 					break;
 				case 2:
-					p2PairCnt += ( p1CntVert == 1 ) ? 3 : 0;
+					p2PairCnt += ( p1CntVert == 1 ) ? 5 : 0;
 					break;
 				}
 			}
@@ -308,8 +317,11 @@ int AlphaBeta::utility( State state )
 			{
 				switch ( p1CntVert )
 				{
+				case 1:
+					p1SingleCnt += 3;
+					break;
 				case 2:
-					p1PairCnt += 4;
+					p1PairCnt += 8;
 					break;
 				case 3:
 					if ( ++p1DangerCnt >= 2 ) 
@@ -328,14 +340,14 @@ int AlphaBeta::utility( State state )
 					p1SingleCnt += 3 - p2CntVert;
 					break;
 				case 2:
-					p1PairCnt += ( p2CntVert == 1 ) ? 3 : 0;
+					p1PairCnt += ( p2CntVert == 1 ) ? 5 : 0;
 					break;
 				}
 			}
 		}
 		rowShift += 8;
 	}
-	return ( ( p1DangerCnt - p2DangerCnt ) * 10 ) + ( p1PairCnt - p2PairCnt ) + ( p1SingleCnt - p2SingleCnt ); // Danger tiles should have priority in dealing with
+	return ( ( p1DangerCnt - p2DangerCnt ) * 100 ) + ( p1PairCnt - p2PairCnt ) + ( p1SingleCnt - p2SingleCnt ); // Danger tiles should have priority in dealing with
 }
 
 // Generate a successor node for a given board index
@@ -357,7 +369,7 @@ State AlphaBeta::successor( State state, int idx, bool isMin )
 	for ( int i = 0; i < 7; ++i )
 	{
 		idx -= 8;
-		if ( idx > 0 )
+		if ( idx >= 0 )
 		{
 			++row;
 		}
