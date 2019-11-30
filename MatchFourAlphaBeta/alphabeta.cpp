@@ -73,7 +73,8 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		}
 		State s = successor( state, i, false );
 		
-		v = std::max( v, minValue( s, alpha, beta, target_depth, cur_depth + 1 ) );
+		int res = minValue( s, alpha, beta, target_depth, cur_depth + 1 );
+		v = std::max( v, res );
 
 		if ( v >= beta )
 		{
@@ -84,15 +85,15 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		// Insert successor states into map so we can determine what move to make
 		if ( cur_depth == 0 )
 		{
-			s.utility = v;
-			if ( m_successors.find( v ) != m_successors.end() )
+			s.utility = res;
+			if ( m_successors.find( res ) != m_successors.end() )
 			{
-				m_successors.at( v ).push_back( s );
+				m_successors.at( res ).push_back( s );
 			}
 			else
 			{
 				std::vector<State> vec {s};
-				m_successors.insert( { v, vec } );
+				m_successors.insert( { res, vec } );
 			}
 		}
 	}
@@ -131,22 +132,7 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 		{
 			return v;
 		}
-		beta = std::max( beta, v );
-
-		// Insert successor states into map so we can determine what move to make
-		if ( cur_depth == 0 )
-		{
-			s.utility = v;
-			if ( m_successors.find( v ) != m_successors.end() )
-			{
-				m_successors.at( v ).push_back( s );
-			}
-			else
-			{
-				std::vector<State> vec {s};
-				m_successors.insert( { v, vec } );
-			}
-		}
+		beta = std::min( beta, v );
 	}
 	return v;
 }
@@ -292,11 +278,7 @@ int AlphaBeta::utility( State state )
 					p2PairCnt += 8;
 					break;
 				case 3:
-					if ( ++p2DangerCnt >= 2 ) 
-					{
-						// This is a killer move in our opponent's favor
-						return std::numeric_limits<int>::min() - 1; 
-					}
+					++p2DangerCnt;
 					break;
 				}
 			}
@@ -324,12 +306,8 @@ int AlphaBeta::utility( State state )
 					p1PairCnt += 8;
 					break;
 				case 3:
-					if ( ++p1DangerCnt >= 2 ) 
-					{
-						// This is a killer move in our favor
-						return std::numeric_limits<int>::max() - 1;
-						break;
-					}
+					++p1DangerCnt; 
+					break;
 				}
 			}
 			else if ( p2CntVert >= 1 )
@@ -344,10 +322,21 @@ int AlphaBeta::utility( State state )
 					break;
 				}
 			}
+
+			if ( p1DangerCnt >= 2 )
+			{
+				// This is a killer move in our favor
+				return std::numeric_limits<int>::max() - 1; 
+			}
+			else if ( p2DangerCnt >= 2 ) 
+			{
+				// This is a killer move in our opponent's favor
+				return std::numeric_limits<int>::min() - 1; 
+			}
 		}
 		rowShift += 8;
 	}
-	return ( ( p1DangerCnt - p2DangerCnt ) * 100 ) + ( p1PairCnt - p2PairCnt ) + ( p1SingleCnt - p2SingleCnt ); // Danger tiles should have priority in dealing with
+	return ( ( p1DangerCnt - p2DangerCnt ) * 10000 ) + ( p1PairCnt - p2PairCnt ) + ( p1SingleCnt - p2SingleCnt ); // Danger tiles should have priority in dealing with
 }
 
 // Generate a successor node for a given board index
