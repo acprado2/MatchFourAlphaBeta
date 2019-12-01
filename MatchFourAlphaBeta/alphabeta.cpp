@@ -184,11 +184,11 @@ int AlphaBeta::utility( State state )
 {
 	// Check if this is a terminal state first (best/worst case)
 	if ( state.terminal_p1 )
-		return std::numeric_limits<int>::max();
+		return std::numeric_limits<int>::max() - 1;
 	else if ( state.terminal_p2 )
-		return std::numeric_limits<int>::min();
+		return std::numeric_limits<int>::min() + 1;
 	else if ( state.stalemate )
-		return std::numeric_limits<int>::min() + 2; // Stalemates aren't as bad as losing, but are close
+		return std::numeric_limits<int>::min() + 3; // Stalemates aren't as bad as losing, but are close
 
 	// Check for danger states
 	// Danger states occur when in a four-tile span there are three tiles 
@@ -326,12 +326,12 @@ int AlphaBeta::utility( State state )
 			if ( p1DangerCnt >= 2 )
 			{
 				// This is a killer move in our favor
-				return std::numeric_limits<int>::max() - 1; 
+				return std::numeric_limits<int>::max() - 2; 
 			}
 			else if ( p2DangerCnt >= 2 ) 
 			{
 				// This is a killer move in our opponent's favor
-				return std::numeric_limits<int>::min() + 1; 
+				return std::numeric_limits<int>::min() + 2; 
 			}
 		}
 		rowShift += 8;
