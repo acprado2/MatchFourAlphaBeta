@@ -35,7 +35,7 @@ private:
 	int minValue( State state, int alpha, int beta, int target_depth, int cur_depth );
 
 	bool terminalTest( State& state );
-	int utility( State state );
+	int utility( State state, int depth );
 	State successor( State state, int idx, bool isMin );
 
 	std::map<int, std::vector<State>> m_successors; // Map of successor states with potential actions to take (K = util, V = state)

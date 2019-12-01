@@ -30,7 +30,7 @@ State AlphaBeta::search( State state, size_t time )
 {
 	// TODO: write some function to deal with when to stop searching based on time left
 	State res( state );
-	for ( int i = 3; i < 4; ++i )
+	for ( int i = 5; i < 6; ++i )
 	{
 		res = performSearch( state, i );
 	}
@@ -55,7 +55,7 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		//auto it = m_transposition.find( p );
 		//if ( it == m_transposition.end() )
 		{
-			int res = utility( state );
+			int res = utility( state, cur_depth );
 			//m_transposition[p] = res;
 			return res;
 		}
@@ -76,7 +76,7 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		int res = minValue( s, alpha, beta, target_depth, cur_depth + 1 );
 		v = std::max( v, res );
 
-		if ( v >= beta )
+		if ( v > beta )
 		{
 			return v;
 		}
@@ -108,7 +108,7 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 		//auto it = m_transposition.find( p );
 		//if ( it == m_transposition.end() )
 		{
-			int res = utility( state );
+			int res = utility( state, cur_depth );
 			//m_transposition[p] = res;
 			return res;
 		}
@@ -128,7 +128,7 @@ int AlphaBeta::minValue( State state, int alpha, int beta, int target_depth, int
 
 		v = std::min( v, maxValue( s, alpha, beta, target_depth, cur_depth + 1 ) );
 
-		if ( v <= alpha )
+		if ( v < alpha )
 		{
 			return v;
 		}
@@ -180,15 +180,16 @@ bool AlphaBeta::terminalTest( State& state )
 }
 
 // Heuristic
-int AlphaBeta::utility( State state )
+int AlphaBeta::utility( State state, int depth )
 {
 	// Check if this is a terminal state first (best/worst case)
+	// Give better priority to higher up terminal nodes so we stop loitering on killer move states
 	if ( state.terminal_p1 )
-		return std::numeric_limits<int>::max() - 1;
+		return std::numeric_limits<int>::max() - depth;
 	else if ( state.terminal_p2 )
-		return std::numeric_limits<int>::min() + 1;
+		return std::numeric_limits<int>::min() + depth;
 	else if ( state.stalemate )
-		return std::numeric_limits<int>::min() + 3; // Stalemates aren't as bad as losing, but are close
+		return std::numeric_limits<int>::min() + 100; // Stalemates aren't as bad as losing, but are close
 
 	// Check for danger states
 	// Danger states occur when in a four-tile span there are three tiles 
@@ -326,12 +327,12 @@ int AlphaBeta::utility( State state )
 			if ( p1DangerCnt >= 2 )
 			{
 				// This is a killer move in our favor
-				return std::numeric_limits<int>::max() - 2; 
+				return std::numeric_limits<int>::max() - 50; 
 			}
 			else if ( p2DangerCnt >= 2 ) 
 			{
 				// This is a killer move in our opponent's favor
-				return std::numeric_limits<int>::min() + 2; 
+				return std::numeric_limits<int>::min() + 50; 
 			}
 		}
 		rowShift += 8;
