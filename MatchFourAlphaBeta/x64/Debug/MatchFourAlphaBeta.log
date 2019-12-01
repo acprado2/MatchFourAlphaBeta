@@ -1,15 +1,18 @@
-﻿Build started 2019/12/01 2:38:24.
+﻿Build started 2019/12/01 15:01:41.
      1>Project "F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\MatchFourAlphaBeta\MatchFourAlphaBeta.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         G:\Program Files (x86)\Visual Studio 2013\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt alphabeta.cpp
+         G:\Program Files (x86)\Visual Studio 2013\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt alphabeta.cpp main.cpp
+         main.cpp
          alphabeta.cpp
+         Generating Code...
        Link:
-         G:\Program Files (x86)\Visual Studio 2013\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\x64\Debug\MatchFourAlphaBeta.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\x64\Debug\MatchFourAlphaBeta.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\x64\Debug\MatchFourAlphaBeta.lib" /MACHINE:X64 x64\Debug\alphabeta.obj
+         G:\Program Files (x86)\Visual Studio 2013\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\x64\Debug\MatchFourAlphaBeta.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\x64\Debug\MatchFourAlphaBeta.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\x64\Debug\MatchFourAlphaBeta.lib" /MACHINE:X64 /PROFILE x64\Debug\alphabeta.obj
          x64\Debug\main.obj
          x64\Debug\state.obj
+     1>LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/PROFILE' specification
          MatchFourAlphaBeta.vcxproj -> F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\x64\Debug\MatchFourAlphaBeta.exe
      1>Done Building Project "F:\Documents\Visual Studio 2013\Projects\MatchFourAlphaBeta\MatchFourAlphaBeta\MatchFourAlphaBeta.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.71
+Time Elapsed 00:00:01.43

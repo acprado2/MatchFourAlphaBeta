@@ -4,7 +4,7 @@
 
 State printBoard( bool bAgentFirst, State state, std::vector<std::string> &firstPlayerMoves, std::vector<std::string> &secondPlayerMoves, size_t turnTime );
 State opponentMove( State state );
-void printPlayerMoves( unsigned int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves );
+bool printPlayerMoves( unsigned int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves );
 
 int main( )
 {
@@ -27,7 +27,7 @@ int main( )
 	}
 	std::cout << "\n";
 
-	while ( state.terminal_p1 != true && state.terminal_p2 != true )
+	while ( state.terminal_p1 != true && state.terminal_p2 != true && state.stalemate != true )
 	{
 		state = ( turnOrder == 'A' || turnOrder == 'a' ) ? printBoard( true, ab.search( state, turnTime ), firstPlayerMoves, secondPlayerMoves, turnTime ) : 
 														   printBoard( false, opponentMove( state ), firstPlayerMoves, secondPlayerMoves, turnTime );
@@ -47,8 +47,12 @@ State printBoard( bool bAgentFirst, State state, std::vector<std::string> &first
 		std::swap( state.terminal_p1, state.terminal_p2 );
 	}
 
+	// Quickly test state for terminality
+	ab.terminalTest( state );
+
 	char row = 'A';
 	std::cout << std::string( 4, ' ' ) << "1 2 3 4 5 6 7 8 " << std::string( 5, ' ' ) << ( bAgentFirst ? "Agent vs. Opponent\n" : "Opponent vs. Agent\n" );
+	bool bPrintPlayerMoves = true; // Check so that we don't print extra moves after game is over
 
 	// Print the first 8 moves with the board
 	for ( unsigned int i = 0; i < 8; ++i )
@@ -71,7 +75,10 @@ State printBoard( bool bAgentFirst, State state, std::vector<std::string> &first
 			}
 		}
 		std::cout << std::string( 7, ' ' ) << i + 1 << ". ";
-		printPlayerMoves( i, state, firstPlayerMoves, secondPlayerMoves );
+		if ( bPrintPlayerMoves )
+		{
+			bPrintPlayerMoves = printPlayerMoves( i, state, firstPlayerMoves, secondPlayerMoves );
+		}
 		std::cout << "\n";
 		++row;
 	}
@@ -79,14 +86,23 @@ State printBoard( bool bAgentFirst, State state, std::vector<std::string> &first
 	// Print the remaining moves
 	for ( unsigned int i = 8; i < firstPlayerMoves.size(); ++i )
 	{
-		std::cout << std::string( 26, ' ' );
-		printPlayerMoves( i, state, firstPlayerMoves, secondPlayerMoves );
+		std::cout << std::string( 26, ' ' ) << i + 1 << ". ";
+		if ( !printPlayerMoves( i, state, firstPlayerMoves, secondPlayerMoves ) )
+		{
+			break;
+		}
 		std::cout << "\n";
 	}
 
-	// Game is over, return to main()
 	if ( state.terminal_p1 || state.terminal_p2 )
 	{
+		// Game is over, return to main()
+		return state;
+	}
+	else if ( state.stalemate )
+	{
+		// Board has filled with no victor
+		std::cout << "Stalemate!\n";
 		return state;
 	}
 
@@ -108,41 +124,41 @@ State printBoard( bool bAgentFirst, State state, std::vector<std::string> &first
 // Receive next opponent move
 State opponentMove( State state )
 {
+	unsigned int pos;
 	std::cout << "Choose Opponent's next move: ";
 	while ( true )
 	{
 		std::cin >> state.move;
-
+		pos = static_cast<unsigned int>( ( 8 * ( state.move[0] - 'a') ) + ( state.move[1] - '1' ) ); // convert move string to a board position (8 * row + col)
+		// Check that this is a valid move
 		if ( ( state.move[0] < 'a' || state.move[0] > 'h' ) || ( state.move[1] < '1' || state.move[1] > '8' ) )
 		{
 			std::cout << "\n\nPlease enter a valid move: ";
+		}
+		else if ( state.board_p1 & ( 1LL << pos ) || state.board_p2 & ( 1LL << pos ) )
+		{
+			std::cout << "\n\nThat move has already been played. Please select another move: ";
 		}
 		else
 		{
 			break;
 		}
 	}
-	unsigned int pos = static_cast<unsigned int>( ( 8 * ( state.move[0] - 'a') ) + ( state.move[1] - '1' ) ); // convert move string to a board position (8 * row + col)
 	state.board_p2 |= ( 1LL << pos );
 	std::cout << "\n\n";
 	return state;
 }
 
-void printPlayerMoves( unsigned int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves )
+// Print a row of player moves. Returns true if we should stop printing player moves
+bool printPlayerMoves( unsigned int idx, State state, std::vector<std::string> firstPlayerMoves, std::vector<std::string> secondPlayerMoves )
 {
 	if ( firstPlayerMoves.size() == idx + 1 )
 	{
 		std::cout << firstPlayerMoves[idx];
 		if ( state.terminal_p1 )
 		{
-			std::cout << " wins\n";
-			return;
-		}
-		else if ( state.terminal_p2 )
-		{
-			std::cout << std::string( 2, ' ' ) << secondPlayerMoves[idx];
-			std::cout << " wins\n";
-			return;
+			std::cout << " wins";
+			return false;
 		}
 	}
 	else if ( firstPlayerMoves.size() > idx )
@@ -150,9 +166,20 @@ void printPlayerMoves( unsigned int idx, State state, std::vector<std::string> f
 		std::cout << firstPlayerMoves[idx];
 	}
 
-	if ( secondPlayerMoves.size() > idx )
+	if ( secondPlayerMoves.size() == idx + 1 )
+	{
+		std::cout << std::string( 2, ' ' ) << secondPlayerMoves[idx];
+		if ( state.terminal_p2 )
+		{
+			std::cout << " wins";
+			return false;
+		}
+	}
+	else if ( secondPlayerMoves.size() > idx )
 	{
 		std::cout << std::string( 2, ' ' ) << secondPlayerMoves[idx];
 	}
+
+	return true;
 }
 

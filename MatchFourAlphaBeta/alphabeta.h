@@ -26,6 +26,9 @@ public:
 	// Iterative deepening search
 	State search( State state, size_t time );
 
+	// Check if a given state is a terminal/leaf node
+	bool terminalTest( State& state );
+
 private:
 
 	// Searches to fixed depth
@@ -34,12 +37,11 @@ private:
 	int maxValue( State state, int alpha, int beta, int target_depth, int cur_depth );
 	int minValue( State state, int alpha, int beta, int target_depth, int cur_depth );
 
-	bool terminalTest( State& state );
 	int utility( State state, int depth );
 	State successor( State state, int idx, bool isMin );
 
 	std::map<int, std::vector<State>> m_successors; // Map of successor states with potential actions to take (K = util, V = state)
-	std::unordered_map<std::pair<unsigned long long, unsigned long long>, int, BoardHash> m_transposition;
+	//std::unordered_map<std::pair<unsigned long long, unsigned long long>, int, BoardHash> m_transposition;
 
 	// Lookup tables
 	static const unsigned int m_horizontal[];

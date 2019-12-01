@@ -30,7 +30,7 @@ State AlphaBeta::search( State state, size_t time )
 {
 	// TODO: write some function to deal with when to stop searching based on time left
 	State res( state );
-	for ( int i = 5; i < 6; ++i )
+	for ( int i = 4; i < 5; ++i )
 	{
 		res = performSearch( state, i );
 	}
@@ -43,8 +43,14 @@ State AlphaBeta::performSearch( State state, int depth )
 	int v = maxValue( state, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), depth, 0 );
 		
 	// Pick a random action from the highest utility moves
-	std::vector<State> actions = m_successors.rbegin()->second;
-	return actions.at( rand() % actions.size() );
+	if ( m_successors.size() > 0 )
+	{
+		std::vector<State> actions = m_successors.rbegin()->second;
+		return actions.at( rand() % actions.size() );
+	}
+
+	// We've been passed a terminal state
+	return state;
 }
 
 int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int cur_depth )
@@ -206,10 +212,11 @@ int AlphaBeta::utility( State state, int depth )
 		for ( int j = 0; j < 8; ++j )
 		{
 			// Check for danger tiles by counting horizontal/vertical bits
+			unsigned int shiftAmount = rowShift + j;
 			unsigned int p1CntHor = m_horizontal[( p1[j] >> i) & 0xF];
 			unsigned int p2CntHor = m_horizontal[( p2[j] >> i) & 0xF];
-			unsigned int p1CntVert = m_vertical.at( ( state.board_p1 >> ( rowShift + j ) ) & 0x1010101 );
-			unsigned int p2CntVert = m_vertical.at( ( state.board_p2 >> ( rowShift + j ) ) & 0x1010101 );
+			unsigned int p1CntVert = m_vertical.at( ( state.board_p1 >> ( shiftAmount ) ) & 0x1010101 );
+			unsigned int p2CntVert = m_vertical.at( ( state.board_p2 >> ( shiftAmount ) ) & 0x1010101 );
 
 			// Horizontal
 			if ( p1CntHor == 0 )
