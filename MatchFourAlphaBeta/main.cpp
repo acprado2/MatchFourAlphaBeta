@@ -10,7 +10,6 @@ int main( )
 {
 	// NOTE: For UI, if we are player 2, swap returned p1/p2 states and values
 	srand( static_cast<unsigned int>( time(NULL) ) );
-	AlphaBeta ab;
 	State state( 0LL, 0LL );
 	size_t turnTime;
 	char turnOrder;
@@ -27,6 +26,7 @@ int main( )
 	}
 	std::cout << "\n";
 
+	AlphaBeta ab;
 	while ( state.terminal_p1 != true && state.terminal_p2 != true && state.stalemate != true )
 	{
 		state = ( turnOrder == 'A' || turnOrder == 'a' ) ? printBoard( true, ab.search( state, turnTime ), firstPlayerMoves, secondPlayerMoves, turnTime ) : 

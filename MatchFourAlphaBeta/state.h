@@ -19,6 +19,8 @@ public:
 	bool terminal_p1;
 	bool terminal_p2;
 	bool stalemate;
+
+	bool operator!=( const State &s2 );
 }; // State
 
 #endif // STATE

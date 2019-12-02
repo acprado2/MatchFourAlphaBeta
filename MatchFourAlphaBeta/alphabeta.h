@@ -3,6 +3,7 @@
 
 #include <map>
 #include <unordered_map>
+#include <time.h>
 #include <vector>
 #include "state.h"
 
@@ -24,7 +25,7 @@ public:
 	~AlphaBeta();
 
 	// Iterative deepening search
-	State search( State state, size_t time );
+	State search( State state, size_t turnTime );
 
 	// Check if a given state is a terminal/leaf node
 	bool terminalTest( State& state );
@@ -40,12 +41,19 @@ private:
 	int utility( State state, int depth );
 	State successor( State state, int idx, bool isMin );
 
+	bool shouldContinueSearch();
+	bool timeElapsed();
+
 	std::map<int, std::vector<State>> m_successors; // Map of successor states with potential actions to take (K = util, V = state)
 	//std::unordered_map<std::pair<unsigned long long, unsigned long long>, int, BoardHash> m_transposition;
 
 	// Lookup tables
 	static const unsigned int m_horizontal[];
 	static const std::unordered_map<unsigned int, unsigned int> m_vertical;
+
+	// Time values
+	size_t m_turnTime;
+	size_t m_startTime;
 }; // AlphaBeta
 
 #endif // ALPHABETA

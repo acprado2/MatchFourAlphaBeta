@@ -26,3 +26,12 @@ State::State( const State &s )
 State::~State()
 {
 }
+
+bool State::operator!=( const State &s2 )
+{
+	if ( this->board_p1 == s2.board_p1 && this->board_p2 == s2.board_p2 )
+	{
+		return false;
+	}
+	return true;
+}

@@ -19,6 +19,8 @@ const std::unordered_map<unsigned int, unsigned int> AlphaBeta::m_vertical = {
 
 AlphaBeta::AlphaBeta()
 {
+	m_turnTime = 20;
+	m_startTime = 0;
 }
 
 
@@ -26,13 +28,19 @@ AlphaBeta::~AlphaBeta()
 {
 }
 
-State AlphaBeta::search( State state, size_t time )
+State AlphaBeta::search( State state, size_t turnTime )
 {
-	// TODO: write some function to deal with when to stop searching based on time left
+	m_turnTime = turnTime;
+	m_startTime = static_cast<size_t>( time( NULL ) );
 	State res( state );
-	for ( int i = 4; i < 5; ++i )
+	for ( int i = 4; ( ( i < 6 ) && shouldContinueSearch() ); ++i )
 	{
-		res = performSearch( state, i );
+		State tmp = performSearch( state, i );
+		if ( tmp != state )
+		{
+			// Don't overwrite our previous search if the current one terminates early
+			res = tmp;
+		}
 	}
 	return res;
 }
@@ -91,6 +99,14 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 		// Insert successor states into map so we can determine what move to make
 		if ( cur_depth == 0 )
 		{
+			// Only check the time at depth 0 to reduce overhead
+			if ( timeElapsed() )
+			{
+				// We're out of time. Terminate the search
+				m_successors.clear();
+				return v;
+			}
+
 			s.utility = res;
 			if ( m_successors.find( res ) != m_successors.end() )
 			{
@@ -373,4 +389,28 @@ State AlphaBeta::successor( State state, int idx, bool isMin )
 	}
 	s.move = row + std::to_string( col );
 	return s;
+}
+
+// Check if we should continue searching deeper in the tree
+bool AlphaBeta::shouldContinueSearch()
+{
+	size_t elapsed = static_cast<size_t>( time( NULL ) ) - m_startTime;
+	if ( elapsed > ( m_turnTime ) / 2 )
+	{
+		// Don't start another search if more than half of our time has elapsed
+		return false;
+	}
+	return true;
+}
+
+// Check if we should stop our current search
+bool AlphaBeta::timeElapsed()
+{
+	size_t elapsed = static_cast<size_t>( time( NULL ) ) - m_startTime;
+	if ( static_cast<int>( m_turnTime - elapsed ) <= 5 )
+	{
+		// Cancel our search when we have five or less seconds remaining
+		return true;
+	}
+	return false;
 }
