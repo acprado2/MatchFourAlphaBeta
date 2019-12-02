@@ -17,7 +17,7 @@ int main( )
 
 	std::cout << "Please enter the time to take per turn (in seconds): ";
 	std::cin >> turnTime;
-	std::cout << "\nPlease enter turn order (A = Agent first | O = Agent second): ";
+	std::cout << "\nPlease enter turn order (A = Agent first | O = Opponent first): ";
 	std::cin >> turnOrder;
 	if ( turnTime <= 0 )
 	{
@@ -43,8 +43,7 @@ State printBoard( bool bAgentFirst, State state, std::vector<std::string> &first
 	{
 		state = ab.search( state, turnTime ); // replace else state with alphabeta
 		secondPlayerMoves.push_back( state.move );
-		std::swap( state.board_p1, state.board_p2 ); // swap boards (alphabeta always assumes agent is first)
-		std::swap( state.terminal_p1, state.terminal_p2 );
+		std::swap( state.terminal_p1, state.terminal_p2 ); // swap terminal states (alphabeta always assumes agent is first)
 	}
 
 	// Quickly test state for terminality
@@ -115,7 +114,6 @@ State printBoard( bool bAgentFirst, State state, std::vector<std::string> &first
 	else
 	{
 		// Re-swap now that we've finished printing to the screen
-		std::swap( state.board_p1, state.board_p2 );
 		std::swap( state.terminal_p1, state.terminal_p2 );
 	}
 	return state;
