@@ -8,7 +8,7 @@
 #include "state.h"
 
 // Hash function for our lookup table
-struct BoardHash
+/*struct BoardHash
 {
 	std::size_t operator()( const std::pair<unsigned long long, unsigned long long>& p ) const
 	{
@@ -16,7 +16,7 @@ struct BoardHash
 		res ^= p.second;
 		return res;
 	}
-};
+};*/
 
 class AlphaBeta
 {

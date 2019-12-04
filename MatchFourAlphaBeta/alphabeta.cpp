@@ -32,6 +32,7 @@ State AlphaBeta::search( State state, size_t turnTime )
 {
 	m_turnTime = turnTime;
 	m_startTime = static_cast<size_t>( time( NULL ) );
+	m_successors.clear();
 	State res( state );
 	for ( int i = 4; ( ( i < 6 ) && shouldContinueSearch() ); ++i )
 	{
@@ -47,7 +48,6 @@ State AlphaBeta::search( State state, size_t turnTime )
 
 State AlphaBeta::performSearch( State state, int depth )
 {
-	m_successors.clear();
 	int v = maxValue( state, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), depth, 0 );
 		
 	// Pick a random action from the highest utility moves
@@ -78,44 +78,87 @@ int AlphaBeta::maxValue( State state, int alpha, int beta, int target_depth, int
 	int v = std::numeric_limits<int>::min();
 
 	// Generate states
-	for ( int i = 0; i < 64; ++i )
+	if ( cur_depth == 0 && m_successors.size() > 0 )
 	{
-		// Check if this tile is already filled
-		if ( state.board_p1 & ( 1LL << i ) || state.board_p2 & ( 1LL << i ) )
+		std::map<int, std::vector<State>> tmpSuccessors = m_successors;
+		m_successors.clear();
+		for( auto it = tmpSuccessors.rbegin(); it != tmpSuccessors.rend(); ++it )
 		{
-			continue;
-		}
-		State s = successor( state, i, false );
-		
-		int res = minValue( s, alpha, beta, target_depth, cur_depth + 1 );
-		v = std::max( v, res );
-
-		if ( v > beta )
-		{
-			return v;
-		}
-		alpha = std::max( alpha, v );
-
-		// Insert successor states into map so we can determine what move to make
-		if ( cur_depth == 0 )
-		{
-			// Only check the time at depth 0 to reduce overhead
-			if ( timeElapsed() )
+			std::vector<State> actions = it->second;
+			for ( int i = 0; i < actions.size(); ++i )
 			{
-				// We're out of time. Terminate the search
-				m_successors.clear();
+				State s( actions[i] );
+				int res = minValue( s, alpha, beta, target_depth, cur_depth + 1 );
+				v = std::max( v, res );
+
+				alpha = std::max( alpha, v );
+
+				// Insert successor states into map so we can determine what move to make
+				if ( cur_depth == 0 )
+				{
+					// Only check the time at depth 0 to reduce overhead
+					if ( timeElapsed() )
+					{
+						// We're out of time. Terminate the search
+						m_successors.clear();
+						return v;
+					}
+
+					s.utility = res;
+					if ( m_successors.find( res ) != m_successors.end() )
+					{
+						m_successors.at( res ).push_back( s );
+					}
+					else
+					{
+						std::vector<State> vec {s};
+						m_successors.insert( { res, vec } );
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for ( int i = 0; i < 64; ++i )
+		{
+			// Check if this tile is already filled
+			if ( state.board_p1 & ( 1LL << i ) || state.board_p2 & ( 1LL << i ) )
+			{
+				continue;
+			}
+			State s = successor( state, i, false );
+		
+			int res = minValue( s, alpha, beta, target_depth, cur_depth + 1 );
+			v = std::max( v, res );
+
+			if ( v > beta )
+			{
 				return v;
 			}
+			alpha = std::max( alpha, v );
 
-			s.utility = res;
-			if ( m_successors.find( res ) != m_successors.end() )
+			// Insert successor states into map so we can determine what move to make
+			if ( cur_depth == 0 )
 			{
-				m_successors.at( res ).push_back( s );
-			}
-			else
-			{
-				std::vector<State> vec {s};
-				m_successors.insert( { res, vec } );
+				// Only check the time at depth 0 to reduce overhead
+				if ( timeElapsed() )
+				{
+					// We're out of time. Terminate the search
+					m_successors.clear();
+					return v;
+				}
+
+				s.utility = res;
+				if ( m_successors.find( res ) != m_successors.end() )
+				{
+					m_successors.at( res ).push_back( s );
+				}
+				else
+				{
+					std::vector<State> vec {s};
+					m_successors.insert( { res, vec } );
+				}
 			}
 		}
 	}
