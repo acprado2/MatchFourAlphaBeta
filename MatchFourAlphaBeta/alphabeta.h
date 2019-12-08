@@ -48,6 +48,7 @@ private:
 	//std::unordered_map<std::pair<unsigned long long, unsigned long long>, int, BoardHash> m_transposition;
 
 	// Lookup tables
+	static const unsigned int m_rowShift[];
 	static const unsigned int m_horizontal[];
 	static const std::unordered_map<unsigned int, unsigned int> m_vertical;
 

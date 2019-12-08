@@ -4,6 +4,9 @@
 #include <iostream>
 #include "alphabeta.h"
 
+// Lookup table for row shift amounts so we don't have to compute additions over and over
+const unsigned int AlphaBeta::m_rowShift[5] = { 0, 8, 16, 24, 32 };
+
 // Lookup tables count the number of set bits so we can determine danger states in constant time
 const unsigned int AlphaBeta::m_horizontal[16] = { 
 	0, 1, 1, 2, 
@@ -36,6 +39,7 @@ State AlphaBeta::search( State state, size_t turnTime )
 	State res( state );
 	for ( int i = 4; ( ( i < 6 ) && shouldContinueSearch() ); ++i )
 	{
+		std::cout << "i: " << i << "\n";
 		State tmp = performSearch( state, i );
 		if ( tmp != state )
 		{
@@ -263,17 +267,24 @@ int AlphaBeta::utility( State state, int depth )
 	unsigned char *p1 = reinterpret_cast<unsigned char *>( &state.board_p1 );
 	unsigned char *p2 = reinterpret_cast<unsigned char *>( &state.board_p2 );
 
-	int rowShift = 0; // amount of bits to shift to reach current row
 	int p1DangerCnt = 0, p2DangerCnt = 0; // number of danger tiles in the state
 	int p1PairCnt = 0, p2PairCnt = 0, p1SingleCnt = 0, p2SingleCnt = 0; // Pairs and single tiles in the sate
-	for ( int i = 0; i < 5; ++i )
+	for ( int i = 0; i < 8; ++i )
 	{
-		for ( int j = 0; j < 8; ++j )
+		for ( int j = 0; j < 5; ++j )
 		{
 			// Check for danger tiles by counting horizontal/vertical bits
-			unsigned int shiftAmount = rowShift + j;
-			unsigned int p1CntHor = m_horizontal[( p1[j] >> i) & 0xF];
-			unsigned int p2CntHor = m_horizontal[( p2[j] >> i) & 0xF];
+			unsigned int shiftAmount = m_rowShift[j] + i;
+
+			// Check if the row/column is empty so we can potentially skip some bitwise operations
+			if ( j == 0 && ( ( p1[i] | p2[i] ) & 0xFF ) == 0 && ( ( ( state.board_p1 | state.board_p2 ) >> shiftAmount ) & 0x101010101010101 ) == 0 )
+			{
+				// This row/column is empty. Skip analysis
+				break;
+			}
+
+			unsigned int p1CntHor = m_horizontal[( p1[i] >> j ) & 0xF];
+			unsigned int p2CntHor = m_horizontal[( p2[i] >> j ) & 0xF];
 			unsigned int p1CntVert = m_vertical.at( ( state.board_p1 >> ( shiftAmount ) ) & 0x1010101 );
 			unsigned int p2CntVert = m_vertical.at( ( state.board_p2 >> ( shiftAmount ) ) & 0x1010101 );
 
@@ -401,7 +412,6 @@ int AlphaBeta::utility( State state, int depth )
 				return std::numeric_limits<int>::min() + 50; 
 			}
 		}
-		rowShift += 8;
 	}
 	return ( ( p1DangerCnt - p2DangerCnt ) * 10000 ) + ( p1PairCnt - p2PairCnt ) + ( p1SingleCnt - p2SingleCnt ); // Danger tiles should have priority in dealing with
 }
@@ -452,6 +462,7 @@ bool AlphaBeta::timeElapsed()
 	size_t elapsed = static_cast<size_t>( time( NULL ) ) - m_startTime;
 	if ( static_cast<int>( m_turnTime - elapsed ) <= 5 )
 	{
+		std::cout << "ELAPSED: " << elapsed << "\n";
 		// Cancel our search when we have five or less seconds remaining
 		return true;
 	}
